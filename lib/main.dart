@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/observer/app_life_cycle_observer.dart';
-import 'data/repositories/chat_repository.dart';
-import 'data/services/service_locator.dart';
-import 'logic/cubits/auth/auth_cubit.dart';
-import 'logic/cubits/auth/auth_state.dart';
-import 'presentation/home/home_screen.dart';
-import 'presentation/screens/auth/login_screen.dart';
+import 'features/home/data/repo/chat_repository.dart';
+import 'core/services/di.dart';
+import 'features/auth/logic/auth/auth_cubit.dart';
+import 'features/auth/logic/auth/auth_state.dart';
+import 'features/home/presentation/home/home_screen.dart';
+import 'features/auth/screens/auth/login_screen.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 

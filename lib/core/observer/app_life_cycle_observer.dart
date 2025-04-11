@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../data/repositories/chat_repository.dart';
+import '../../features/home/data/repo/chat_repository.dart';
 
 class AppLifeCycleObserver extends WidgetsBindingObserver {
   final String userId;

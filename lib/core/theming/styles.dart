@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import 'colors.dart';
 
 class TextStyles {
+  static const body = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.normal,
+    color: Colors.white,
+  );
   static const title = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.bold,

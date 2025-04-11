@@ -3,14 +3,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:real_time_sign_lansuage_v2/core/services/jitsi_call.dart';
+import 'package:real_time_sign_lansuage_v2/features/home/presentation/chat/cubits/chat_cubit.dart';
 import '../../features/auth/data/repositories/auth_repository.dart';
 import '../../features/home/data/repo/chat_repository.dart';
 import '../../features/home/data/repo/contact_repository.dart';
 import '../../firebase_options.dart';
 import '../../features/auth/logic/auth/auth_cubit.dart';
 import '../../router/app_router.dart';
-
-import '../../features/home/presentation/chat/cubits/chat_cubit.dart';
+// Add these imports
+import 'package:jitsi_meet_flutter_sdk/jitsi_meet_flutter_sdk.dart';
+import 'call_notification_service.dart';
 
 final getIt = GetIt.instance;
 
@@ -32,7 +35,19 @@ Future<void> setupServiceLocator() async {
   getIt.registerFactory(
     () => ChatCubit(
       chatRepository: ChatRepository(),
-      currentUserId: getIt<FirebaseAuth>().currentUser!.uid,
+      userData: getIt<FirebaseAuth>().currentUser!,
     ),
   );
+
+  // Register JitsiMeet
+  getIt.registerLazySingleton(() => JitsiMeet());
+
+  // Register CallNotificationService
+  getIt.registerLazySingleton(() => CallNotificationService());
+
+  // Initialize call notification service
+  await getIt<CallNotificationService>().initialize();
+
+  // Register JitsiMeetService with the injected JitsiMeet instance
+  getIt.registerLazySingleton(() => JitsiMeetService(getIt<JitsiMeet>()));
 }

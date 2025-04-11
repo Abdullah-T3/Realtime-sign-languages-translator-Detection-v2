@@ -2,13 +2,15 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/repo/chat_repository.dart';
 import 'chat_state.dart';
 
 class ChatCubit extends Cubit<ChatState> {
   final ChatRepository _chatRepository;
-  final String currentUserId;
+  final User userData;
+
   bool _isInChat = false;
   StreamSubscription? _messageSubscription;
   StreamSubscription? _onlineStatusSubscription;
@@ -17,18 +19,16 @@ class ChatCubit extends Cubit<ChatState> {
   StreamSubscription? _amIBlockStatusSubscription;
   Timer? typingTimer;
 
-  ChatCubit({
-    required ChatRepository chatRepository,
-    required this.currentUserId,
-  }) : _chatRepository = chatRepository,
-       super(const ChatState());
+  ChatCubit({required ChatRepository chatRepository, required this.userData})
+    : _chatRepository = chatRepository,
+      super(const ChatState());
 
   void enterChat(String receiverId) async {
     _isInChat = true;
     emit(state.copyWith(status: ChatStatus.loading));
     try {
       final chatRoom = await _chatRepository.getOrCreateChatRoom(
-        currentUserId,
+        userData.uid,
         receiverId,
       );
       emit(
@@ -45,7 +45,7 @@ class ChatCubit extends Cubit<ChatState> {
       _subscribeToTypingStatus(chatRoom.id);
       _subscribeToBlockStatus(receiverId);
 
-      await _chatRepository.updateOnlineStatus(currentUserId, true);
+      await _chatRepository.updateOnlineStatus(userData.uid, true);
     } catch (e) {
       emit(
         state.copyWith(
@@ -65,7 +65,7 @@ class ChatCubit extends Cubit<ChatState> {
     try {
       await _chatRepository.sendMessage(
         chatRoomId: state.chatRoomId!,
-        senderId: currentUserId,
+        senderId: userData.uid,
         receiverId: receiverId,
         content: content,
       );
@@ -174,7 +174,7 @@ class ChatCubit extends Cubit<ChatState> {
 
             emit(
               state.copyWith(
-                isReceiverTyping: isTyping && typingUserId != currentUserId,
+                isReceiverTyping: isTyping && typingUserId != userData.uid,
               ),
             );
           },
@@ -187,14 +187,14 @@ class ChatCubit extends Cubit<ChatState> {
   void _subscribeToBlockStatus(String otherUserId) {
     _blockStatusSubscription?.cancel();
     _blockStatusSubscription = _chatRepository
-        .isUserBlocked(currentUserId, otherUserId)
+        .isUserBlocked(userData.uid, otherUserId)
         .listen(
           (isBlocked) {
             emit(state.copyWith(isUserBlocked: isBlocked));
 
             _amIBlockStatusSubscription?.cancel();
             _blockStatusSubscription = _chatRepository
-                .amIBlocked(currentUserId, otherUserId)
+                .amIBlocked(userData.uid, otherUserId)
                 .listen((isBlocked) {
                   emit(state.copyWith(amIBlocked: isBlocked));
                 });
@@ -220,7 +220,7 @@ class ChatCubit extends Cubit<ChatState> {
     try {
       await _chatRepository.updateTypingStatus(
         state.chatRoomId!,
-        currentUserId,
+        userData.uid,
         isTyping,
       );
     } catch (e) {
@@ -230,7 +230,7 @@ class ChatCubit extends Cubit<ChatState> {
 
   Future<void> blockUser(String userId) async {
     try {
-      await _chatRepository.blockUser(currentUserId, userId);
+      await _chatRepository.blockUser(userData.uid, userId);
     } catch (e) {
       emit(state.copyWith(error: 'failed to block user $e'));
     }
@@ -238,7 +238,7 @@ class ChatCubit extends Cubit<ChatState> {
 
   Future<void> unBlockUser(String userId) async {
     try {
-      await _chatRepository.unBlockUser(currentUserId, userId);
+      await _chatRepository.unBlockUser(userData.uid, userId);
     } catch (e) {
       emit(state.copyWith(error: 'failed to unblock user $e'));
     }
@@ -246,7 +246,7 @@ class ChatCubit extends Cubit<ChatState> {
 
   Future<void> _markMessagesAsRead(String chatRoomId) async {
     try {
-      await _chatRepository.markMessagesAsRead(chatRoomId, currentUserId);
+      await _chatRepository.markMessagesAsRead(chatRoomId, userData.uid);
     } catch (e) {
       print("error marking messages as read $e");
     }

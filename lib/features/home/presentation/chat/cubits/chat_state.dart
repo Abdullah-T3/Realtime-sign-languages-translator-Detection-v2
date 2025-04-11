@@ -5,6 +5,31 @@ import '../../../data/model/chat_message.dart';
 
 enum ChatStatus { inital, loading, loaded, error }
 
+enum CallStatus {
+  none,
+  incoming,
+  outgoing,
+  connecting,
+  connected,
+  ended,
+  declined,
+  missed,
+  error,
+}
+
+class CallState extends Equatable {
+  final CallStatus status;
+
+  const CallState({this.status = CallStatus.none});
+
+  CallState copyWith({CallStatus? status}) {
+    return CallState(status: status ?? this.status);
+  }
+
+  @override
+  List<Object?> get props => [status];
+}
+
 class ChatState extends Equatable {
   final ChatStatus status;
   final String? error;

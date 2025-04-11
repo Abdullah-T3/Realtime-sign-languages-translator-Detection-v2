@@ -206,10 +206,23 @@ class _ChatMessageScreenState extends State<ChatMessageScreen> {
                     if (confirm == true) {
                       await _chatCubit.blockUser(widget.receiverId);
                     }
+                  } else if (value == "call") {
+                    // Start a video call with the receiver
+                    // _chatCubit.startVideoCall(widget.receiverId);
                   }
                 },
                 itemBuilder:
                     (context) => <PopupMenuEntry<String>>[
+                      const PopupMenuItem(
+                        value: 'call',
+                        child: Row(
+                          children: [
+                            Icon(Icons.call),
+                            SizedBox(width: 8),
+                            Text("Call"),
+                          ],
+                        ),
+                      ),
                       const PopupMenuItem(
                         value: 'block',
                         child: Text("Block User"),
@@ -251,7 +264,7 @@ class _ChatMessageScreenState extends State<ChatMessageScreen> {
                   itemCount: state.messages.length,
                   itemBuilder: (context, index) {
                     final message = state.messages[index];
-                    final isMe = message.senderId == _chatCubit.currentUserId;
+                    final isMe = message.senderId == _chatCubit.userData!.uid;
                     return MessageBubble(message: message, isMe: isMe);
                   },
                 ),
